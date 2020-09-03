@@ -5,9 +5,6 @@ on:
     tag_version:
      description: 'Semantic Version'
      required: true
-  push:
-    tags:
-      - '*'
   repository_dispatch:
     types: [one-app-docker-tag-check]
 jobs:
@@ -19,15 +16,11 @@ jobs:
       - name: Set env
         id: set_tag_version
         run: |
-          #Checks for when a valid tag is manually pushed
-          if [[ $GITHUB_REF != "" && "${{ github.event.client_payload.tagversion }}" == "" ]];
+          #Checks for when repository dispatch triggers this action
+          if [[ $GITHUB_REF != "" && "${{ github.event.client_payload.tagversion }}" != "" ]]; 
           then
-          echo ::set-output name=tagversion::$(egrep -o '(v[0-9]+\.[0-9]+\.[0-9]+)(-\S*)?' <<< $GITHUB_REF)
-          else
           echo ::set-output name=tagversion::${{ github.event.client_payload.tagversion }}
-          fi
-          if [[ "${{ github.event.inputs.tag_version }}" != "" ]]
-          then
+          else
           echo ::set-output name=tagversion::${{ github.event.inputs.tag_version }}
           fi
           echo $tagversion
